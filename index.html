@@ -2,115 +2,150 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nexin LTD | Financial Reconciliation</title>
+    <title>Nexin LTD | Executive Financial Report</title>
     <style>
         :root { --nexin-orange: #FF8C00; --nexin-dark: #1E1E26; --nexin-bg: #F4F7F6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--nexin-bg); padding: 20px; color: #333; }
-        .dashboard { max-width: 1000px; margin: auto; background: #fff; padding: 40px; border-radius: 8px; border-top: 8px solid var(--nexin-orange); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        .dashboard { max-width: 1000px; margin: auto; background: #fff; padding: 40px; border-radius: 8px; border-top: 10px solid var(--nexin-dark); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* Summary Cards */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .card { background: var(--nexin-dark); color: white; padding: 20px; border-radius: 6px; border-bottom: 4px solid var(--nexin-orange); }
+        .card h4 { margin: 0; font-size: 11px; text-transform: uppercase; color: #aaa; }
+        .card .amount { font-size: 20px; font-weight: bold; margin-top: 5px; }
+        .card.highlight { background: var(--nexin-orange); color: var(--nexin-dark); }
+        .card.highlight h4 { color: rgba(0,0,0,0.6); }
+
+        header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
         .logo { font-size: 28px; font-weight: 800; color: var(--nexin-dark); }
         .logo span { color: var(--nexin-orange); }
+        
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th { background: var(--nexin-dark); color: #fff; padding: 12px; text-align: left; font-size: 12px; }
+        th { background: #f8f9fa; color: var(--nexin-dark); padding: 12px; text-align: left; font-size: 11px; border-bottom: 2px solid var(--nexin-dark); }
         td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; }
-        [contenteditable="true"] { background: #fffdf5; padding: 5px; border-radius: 3px; border: 1px solid transparent; }
-        [contenteditable="true"]:focus { border: 1px solid var(--nexin-orange); outline: none; background: #fff; }
-        .overhead-box { background: #fff5eb; padding: 20px; border-radius: 5px; margin-top: 20px; }
-        .total-row { background: #eee; font-weight: bold; }
-        .btn-group { margin-bottom: 20px; display: flex; gap: 10px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; font-weight: 600; }
-        .btn-pdf { background: var(--nexin-dark); color: white; }
+        
+        [contenteditable="true"] { background: #fffdf5; border: 1px dashed #ccc; padding: 4px; }
+        .overhead-section { background: #fff5eb; padding: 20px; border-radius: 5px; margin-top: 30px; border: 1px solid #ffe0b2; }
+        
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <div class="btn-group">
-        <button class="btn-pdf" onclick="window.print()">Save as PDF / Print</button>
-    </div>
-
     <header>
         <div class="logo">NEXIN <span>LTD</span></div>
         <div style="text-align: right">
-            <strong>Labor & Material Reconciliation</strong><br>
-            <span id="currentDate"></span>
+            <strong>Project Financial Reconciliation</strong><br>
+            <small>Phase: Five-Story Apartment Development</small>
         </div>
     </header>
 
+    <div class="summary-grid">
+        <div class="card">
+            <h4>Initial Labor Budget</h4>
+            <div class="amount" id="sum-initial">KES 0</div>
+        </div>
+        <div class="card">
+            <h4>Total Overheads (Materials)</h4>
+            <div class="amount" id="sum-overhead" style="color: var(--nexin-orange);">KES 0</div>
+        </div>
+        <div class="card">
+            <h4>Paid to Laborers</h4>
+            <div class="amount" id="sum-paid">KES 0</div>
+        </div>
+        <div class="card highlight">
+            <h4>Net Balance Remaining</h4>
+            <div class="amount" id="sum-net">KES 0</div>
+        </div>
+    </div>
+
+    <h3 style="font-size: 16px;">1. Labor Force Breakdown</h3>
     <table>
         <thead>
             <tr>
-                <th>Labor Force Description</th>
-                <th>Contract Sum (KES)</th>
-                <th>Paid to Date (KES)</th>
-                <th>M-PESA Ref / Date</th>
+                <th>Trade</th>
+                <th>Original Quote (Piece Work)</th>
+                <th>Paid to Date</th>
+                <th>M-PESA / Remarks</th>
                 <th>Balance Due</th>
             </tr>
         </thead>
         <tbody id="laborTable">
-            <tr><td>1. Paint Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
-            <tr><td>2. Glass Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
-            <tr><td>3. Board & Gypsum</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
-            <tr><td>4. Tile Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
-            <tr><td>5. Repair Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
-            <tr><td>6. Plumbing Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
+            <tr><td>Paint Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td>Glass Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td>Board & Gypsum</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td>Tile Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td>Repair Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td>Plumbing Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
         </tbody>
-        <tfoot>
-            <tr class="total-row">
-                <td>TOTAL LABOR COST</td>
-                <td id="totalContract">0</td>
-                <td id="totalPaid">0</td>
-                <td>--</td>
-                <td id="totalDue">0</td>
-            </tr>
-        </tfoot>
     </table>
 
-    <div class="overhead-box">
-        <h3>Material Diversion / Overhead Log</h3>
-        <p><small>Finances originally assigned for labor used for urgent site materials.</small></p>
+    <div class="overhead-section">
+        <h3 style="margin-top:0; font-size: 16px;">2. Overhead & Material Diversion Log</h3>
         <table id="overheadTable">
-            <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>M-PESA Details</th>
-                <th>Amount (KES)</th>
-            </tr>
-            <tr>
-                <td contenteditable="true">01/01/26</td>
-                <td contenteditable="true">Cement & Sand delivery</td>
-                <td contenteditable="true">MPESA-REF-XYZ</td>
-                <td contenteditable="true" class="over-amt">0</td>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Reason for Diversion</th>
+                    <th>Ref No.</th>
+                    <th>Amount (KES)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td contenteditable="true">--</td>
+                    <td contenteditable="true">Emergency Material Purchase</td>
+                    <td contenteditable="true">--</td>
+                    <td contenteditable="true" class="o-amount">0</td>
+                </tr>
+            </tbody>
         </table>
-        <button onclick="addRow()">+ Add Row</button>
+        <button class="no-print" onclick="addOverhead()">+ Add Material Expense</button>
+    </div>
+
+    <div style="margin-top:30px; border-top: 1px solid #eee; padding-top: 20px;">
+        <button class="no-print" style="background: var(--nexin-dark); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;" onclick="window.print()">Export Report to Client</button>
     </div>
 </div>
 
 <script>
-    document.getElementById('currentDate').innerText = new Date().toLocaleDateString();
+    function calculate() {
+        let totalQuote = 0, totalPaid = 0, totalOverhead = 0;
 
-    document.addEventListener('input', function() {
-        let totalC = 0, totalP = 0, totalD = 0;
-        
+        // Calculate Labor
         document.querySelectorAll('#laborTable tr').forEach(row => {
-            let c = parseFloat(row.querySelector('.val-contract').innerText) || 0;
-            let p = parseFloat(row.querySelector('.val-paid').innerText) || 0;
-            let d = c - p;
-            row.querySelector('.val-due').innerText = d.toLocaleString();
-            totalC += c; totalP += p; totalD += d;
+            let quote = parseFloat(row.querySelector('.l-quote').innerText.replace(/,/g, '')) || 0;
+            let paid = parseFloat(row.querySelector('.l-paid').innerText.replace(/,/g, '')) || 0;
+            let due = quote - paid;
+            row.querySelector('.l-due').innerText = due.toLocaleString();
+            totalQuote += quote;
+            totalPaid += paid;
         });
 
-        document.getElementById('totalContract').innerText = totalC.toLocaleString();
-        document.getElementById('totalPaid').innerText = totalPaid.toLocaleString();
-        document.getElementById('totalDue').innerText = totalDue.toLocaleString();
-    });
+        // Calculate Overheads
+        document.querySelectorAll('.o-amount').forEach(cell => {
+            totalOverhead += parseFloat(cell.innerText.replace(/,/g, '')) || 0;
+        });
 
-    function addRow() {
-        let table = document.getElementById('overheadTable');
-        let row = table.insertRow(-1);
-        row.innerHTML = '<td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true" class="over-amt">0</td>';
+        // Update Summary Cards
+        document.getElementById('sum-initial').innerText = "KES " + totalQuote.toLocaleString();
+        document.getElementById('sum-overhead').innerText = "KES " + totalOverhead.toLocaleString();
+        document.getElementById('sum-paid').innerText = "KES " + totalPaid.toLocaleString();
+        
+        // Net Balance Remaining = (Initial Budget) - (Overheads) - (Paid to Labor)
+        let netBalance = totalQuote - totalOverhead - totalPaid;
+        document.getElementById('sum-net').innerText = "KES " + netBalance.toLocaleString();
     }
+
+    function addOverhead() {
+        let table = document.getElementById('overheadTable').getElementsByTagName('tbody')[0];
+        let row = table.insertRow();
+        row.innerHTML = '<td contenteditable="true">--</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true" class="o-amount">0</td>';
+    }
+
+    document.addEventListener('input', calculate);
 </script>
+
 </body>
 </html>
