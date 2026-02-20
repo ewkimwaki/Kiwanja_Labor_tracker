@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nexin LTD | Smart Financial Reconciler</title>
+    <title>Nexin LTD | Project Financial Dashboard</title>
     <style>
         :root { --nexin-orange: #FF8C00; --nexin-dark: #1E1E26; --nexin-bg: #F4F7F6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--nexin-bg); padding: 20px; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--nexin-bg); padding: 20px; color: #333; }
         .dashboard { max-width: 1000px; margin: auto; background: #fff; padding: 40px; border-radius: 8px; border-top: 10px solid var(--nexin-dark); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
+        /* Summary Grid */
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card { background: var(--nexin-dark); color: white; padding: 20px; border-radius: 6px; border-bottom: 4px solid var(--nexin-orange); }
         .card h4 { margin: 0; font-size: 11px; text-transform: uppercase; color: #aaa; }
@@ -25,34 +26,44 @@
         [contenteditable="true"] { background: #fffdf5; border: 1px dashed #ccc; padding: 4px; outline: none; }
         .overhead-section { background: #fff5eb; padding: 20px; border-radius: 5px; margin-top: 30px; border: 1px solid #ffe0b2; }
         
-        .btn { padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; margin-right: 10px; }
+        .controls { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn { padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
         .btn-save { background: #2e7d32; color: white; }
         .btn-clear { background: #d32f2f; color: white; }
         .btn-pdf { background: var(--nexin-dark); color: white; }
 
-        @media print { .no-print { display: none; } [contenteditable="true"] { border: none; background: transparent; } }
+        .signature-area { display: none; margin-top: 50px; border-top: 1px solid #333; width: 250px; padding-top: 10px; font-size: 12px; }
+
+        /* HIDE CONTROLS ON PRINT */
+        @media print { 
+            .no-print { display: none !important; } 
+            body { background: white; padding: 0; }
+            .dashboard { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+            [contenteditable="true"] { border: none !important; background: transparent !important; }
+            .signature-area { display: block; } /* Show signature only on PDF */
+        }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <div class="no-print" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
-        <button class="btn btn-save" onclick="saveData()">💾 Save Progress (To this Device)</button>
-        <button class="btn btn-clear" onclick="clearData()">🗑️ Clear Table</button>
-        <button class="btn btn-pdf" onclick="window.print()">📄 Export PDF for Client</button>
+    <div class="controls no-print">
+        <button class="btn btn-save" onclick="saveData()">💾 Save Progress</button>
+        <button class="btn btn-clear" onclick="clearData()">🗑️ Reset</button>
+        <button class="btn btn-pdf" onclick="window.print()">📄 Generate Client PDF</button>
     </div>
 
     <header>
         <div class="logo">NEXIN <span>LTD</span></div>
         <div style="text-align: right">
-            <strong>Project Financial Reconciliation</strong><br>
-            <small>Phase: Five-Story Apartment Development</small>
+            <strong>Financial Reconciliation Report</strong><br>
+            <small id="reportDate"></small>
         </div>
     </header>
 
     <div class="summary-grid">
         <div class="card">
-            <h4>Total Labor Budget Issued</h4>
+            <h4>Total Labor Budget</h4>
             <div class="amount" id="sum-initial">0</div>
         </div>
         <div class="card">
@@ -60,11 +71,11 @@
             <div class="amount" id="sum-overhead" style="color: var(--nexin-orange);">0</div>
         </div>
         <div class="card highlight">
-            <h4>Balance After Overheads</h4>
+            <h4>Bal. After Overheads</h4>
             <div id="sum-after-overhead" class="amount">0</div>
         </div>
         <div class="card">
-            <h4>Net Due (To Laborers)</h4>
+            <h4>Net Due (Labor)</h4>
             <div class="amount" id="sum-net">0</div>
         </div>
     </div>
@@ -74,7 +85,7 @@
         <thead>
             <tr>
                 <th>Trade</th>
-                <th>Original Piece Work (KES)</th>
+                <th>Contract Sum (KES)</th>
                 <th>Paid to Date</th>
                 <th>M-PESA / Remarks</th>
                 <th>Balance Due</th>
@@ -96,19 +107,26 @@
             <thead>
                 <tr>
                     <th>Date</th>
-                    <th>Reason for Diversion</th>
+                    <th>Description</th>
                     <th>Amount (KES)</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="overheadBody">
                 <tr><td contenteditable="true">--</td><td contenteditable="true"></td><td contenteditable="true" class="o-amount">0</td></tr>
             </tbody>
         </table>
         <button class="no-print" onclick="addOverhead()">+ Add Row</button>
     </div>
+
+    <div class="signature-area">
+        <strong>Project Manager Signature</strong><br>
+        Nexin LTD Construction Management
+    </div>
 </div>
 
 <script>
+    document.getElementById('reportDate').innerText = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
     function calculate() {
         let totalQuote = 0, totalPaid = 0, totalOverhead = 0;
 
@@ -124,40 +142,75 @@
             totalOverhead += parseFloat(cell.innerText.replace(/,/g, '')) || 0;
         });
 
-        document.getElementById('sum-initial').innerText = totalQuote.toLocaleString();
-        document.getElementById('sum-overhead').innerText = totalOverhead.toLocaleString();
+        document.getElementById('sum-initial').innerText = "KES " + totalQuote.toLocaleString();
+        document.getElementById('sum-overhead').innerText = "KES " + totalOverhead.toLocaleString();
         
         let afterOverhead = totalQuote - totalOverhead;
-        document.getElementById('sum-after-overhead').innerText = afterOverhead.toLocaleString();
+        document.getElementById('sum-after-overhead').innerText = "KES " + afterOverhead.toLocaleString();
 
         let netDue = afterOverhead - totalPaid;
-        document.getElementById('sum-net').innerText = netDue.toLocaleString();
+        document.getElementById('sum-net').innerText = "KES " + netDue.toLocaleString();
     }
 
     function addOverhead() {
-        let table = document.getElementById('overheadTable').getElementsByTagName('tbody')[0];
+        let table = document.getElementById('overheadBody');
         let row = table.insertRow();
         row.innerHTML = '<td contenteditable="true">--</td><td contenteditable="true"></td><td contenteditable="true" class="o-amount">0</td>';
     }
 
     function saveData() {
-        const data = document.body.innerHTML;
-        localStorage.setItem('nexinReportData', data);
-        alert('Progress saved to this browser!');
+        const laborData = [];
+        document.querySelectorAll('#laborTable tr').forEach(row => {
+            laborData.push({
+                quote: row.querySelector('.l-quote').innerText,
+                paid: row.querySelector('.l-paid').innerText,
+                remarks: row.cells[3].innerText
+            });
+        });
+
+        const overheadData = [];
+        document.querySelectorAll('#overheadBody tr').forEach(row => {
+            overheadData.push({
+                date: row.cells[0].innerText,
+                desc: row.cells[1].innerText,
+                amt: row.cells[2].innerText
+            });
+        });
+
+        localStorage.setItem('nexin_labor', JSON.stringify(laborData));
+        localStorage.setItem('nexin_overhead', JSON.stringify(overheadData));
+        alert('Data saved successfully to your browser.');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('nexinReportData');
-        if (saved) {
-            // Only update the editable areas to prevent breaking scripts
-            document.body.innerHTML = saved;
-            calculate();
+        const labor = JSON.parse(localStorage.getItem('nexin_labor'));
+        const overhead = JSON.parse(localStorage.getItem('nexin_overhead'));
+
+        if (labor) {
+            const rows = document.querySelectorAll('#laborTable tr');
+            labor.forEach((item, i) => {
+                if(rows[i]) {
+                    rows[i].querySelector('.l-quote').innerText = item.quote;
+                    rows[i].querySelector('.l-paid').innerText = item.paid;
+                    rows[i].cells[3].innerText = item.remarks;
+                }
+            });
         }
+
+        if (overhead) {
+            const body = document.getElementById('overheadBody');
+            body.innerHTML = ''; // clear default
+            overhead.forEach(item => {
+                let row = body.insertRow();
+                row.innerHTML = `<td contenteditable="true">${item.date}</td><td contenteditable="true">${item.desc}</td><td contenteditable="true" class="o-amount">${item.amt}</td>`;
+            });
+        }
+        calculate();
     }
 
     function clearData() {
-        if(confirm("Clear all data?")) {
-            localStorage.removeItem('nexinReportData');
+        if(confirm("This will erase all saved project data. Proceed?")) {
+            localStorage.clear();
             location.reload();
         }
     }
