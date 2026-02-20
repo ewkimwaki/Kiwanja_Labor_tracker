@@ -2,19 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nexin LTD | Executive Financial Report</title>
+    <title>Nexin LTD | Smart Financial Reconciler</title>
     <style>
         :root { --nexin-orange: #FF8C00; --nexin-dark: #1E1E26; --nexin-bg: #F4F7F6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--nexin-bg); padding: 20px; color: #333; }
         .dashboard { max-width: 1000px; margin: auto; background: #fff; padding: 40px; border-radius: 8px; border-top: 10px solid var(--nexin-dark); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Summary Cards */
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card { background: var(--nexin-dark); color: white; padding: 20px; border-radius: 6px; border-bottom: 4px solid var(--nexin-orange); }
         .card h4 { margin: 0; font-size: 11px; text-transform: uppercase; color: #aaa; }
         .card .amount { font-size: 20px; font-weight: bold; margin-top: 5px; }
         .card.highlight { background: var(--nexin-orange); color: var(--nexin-dark); }
-        .card.highlight h4 { color: rgba(0,0,0,0.6); }
 
         header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
         .logo { font-size: 28px; font-weight: 800; color: var(--nexin-dark); }
@@ -24,15 +22,26 @@
         th { background: #f8f9fa; color: var(--nexin-dark); padding: 12px; text-align: left; font-size: 11px; border-bottom: 2px solid var(--nexin-dark); }
         td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; }
         
-        [contenteditable="true"] { background: #fffdf5; border: 1px dashed #ccc; padding: 4px; }
+        [contenteditable="true"] { background: #fffdf5; border: 1px dashed #ccc; padding: 4px; outline: none; }
         .overhead-section { background: #fff5eb; padding: 20px; border-radius: 5px; margin-top: 30px; border: 1px solid #ffe0b2; }
         
-        @media print { .no-print { display: none; } }
+        .btn { padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; margin-right: 10px; }
+        .btn-save { background: #2e7d32; color: white; }
+        .btn-clear { background: #d32f2f; color: white; }
+        .btn-pdf { background: var(--nexin-dark); color: white; }
+
+        @media print { .no-print { display: none; } [contenteditable="true"] { border: none; background: transparent; } }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
+    <div class="no-print" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-save" onclick="saveData()">💾 Save Progress (To this Device)</button>
+        <button class="btn btn-clear" onclick="clearData()">🗑️ Clear Table</button>
+        <button class="btn btn-pdf" onclick="window.print()">📄 Export PDF for Client</button>
+    </div>
+
     <header>
         <div class="logo">NEXIN <span>LTD</span></div>
         <div style="text-align: right">
@@ -43,29 +52,29 @@
 
     <div class="summary-grid">
         <div class="card">
-            <h4>Initial Labor Budget</h4>
-            <div class="amount" id="sum-initial">KES 0</div>
+            <h4>Total Labor Budget Issued</h4>
+            <div class="amount" id="sum-initial">0</div>
         </div>
         <div class="card">
-            <h4>Total Overheads (Materials)</h4>
-            <div class="amount" id="sum-overhead" style="color: var(--nexin-orange);">KES 0</div>
-        </div>
-        <div class="card">
-            <h4>Paid to Laborers</h4>
-            <div class="amount" id="sum-paid">KES 0</div>
+            <h4>Material Overheads</h4>
+            <div class="amount" id="sum-overhead" style="color: var(--nexin-orange);">0</div>
         </div>
         <div class="card highlight">
-            <h4>Net Balance Remaining</h4>
-            <div class="amount" id="sum-net">KES 0</div>
+            <h4>Balance After Overheads</h4>
+            <div id="sum-after-overhead" class="amount">0</div>
+        </div>
+        <div class="card">
+            <h4>Net Due (To Laborers)</h4>
+            <div class="amount" id="sum-net">0</div>
         </div>
     </div>
 
-    <h3 style="font-size: 16px;">1. Labor Force Breakdown</h3>
+    <h3>1. Labor Force Breakdown</h3>
     <table>
         <thead>
             <tr>
                 <th>Trade</th>
-                <th>Original Quote (Piece Work)</th>
+                <th>Original Piece Work (KES)</th>
                 <th>Paid to Date</th>
                 <th>M-PESA / Remarks</th>
                 <th>Balance Due</th>
@@ -82,30 +91,20 @@
     </table>
 
     <div class="overhead-section">
-        <h3 style="margin-top:0; font-size: 16px;">2. Overhead & Material Diversion Log</h3>
+        <h3>2. Material Diversion Log</h3>
         <table id="overheadTable">
             <thead>
                 <tr>
                     <th>Date</th>
                     <th>Reason for Diversion</th>
-                    <th>Ref No.</th>
                     <th>Amount (KES)</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td contenteditable="true">--</td>
-                    <td contenteditable="true">Emergency Material Purchase</td>
-                    <td contenteditable="true">--</td>
-                    <td contenteditable="true" class="o-amount">0</td>
-                </tr>
+                <tr><td contenteditable="true">--</td><td contenteditable="true"></td><td contenteditable="true" class="o-amount">0</td></tr>
             </tbody>
         </table>
-        <button class="no-print" onclick="addOverhead()">+ Add Material Expense</button>
-    </div>
-
-    <div style="margin-top:30px; border-top: 1px solid #eee; padding-top: 20px;">
-        <button class="no-print" style="background: var(--nexin-dark); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;" onclick="window.print()">Export Report to Client</button>
+        <button class="no-print" onclick="addOverhead()">+ Add Row</button>
     </div>
 </div>
 
@@ -113,39 +112,58 @@
     function calculate() {
         let totalQuote = 0, totalPaid = 0, totalOverhead = 0;
 
-        // Calculate Labor
         document.querySelectorAll('#laborTable tr').forEach(row => {
             let quote = parseFloat(row.querySelector('.l-quote').innerText.replace(/,/g, '')) || 0;
             let paid = parseFloat(row.querySelector('.l-paid').innerText.replace(/,/g, '')) || 0;
             let due = quote - paid;
             row.querySelector('.l-due').innerText = due.toLocaleString();
-            totalQuote += quote;
-            totalPaid += paid;
+            totalQuote += quote; totalPaid += paid;
         });
 
-        // Calculate Overheads
         document.querySelectorAll('.o-amount').forEach(cell => {
             totalOverhead += parseFloat(cell.innerText.replace(/,/g, '')) || 0;
         });
 
-        // Update Summary Cards
-        document.getElementById('sum-initial').innerText = "KES " + totalQuote.toLocaleString();
-        document.getElementById('sum-overhead').innerText = "KES " + totalOverhead.toLocaleString();
-        document.getElementById('sum-paid').innerText = "KES " + totalPaid.toLocaleString();
+        document.getElementById('sum-initial').innerText = totalQuote.toLocaleString();
+        document.getElementById('sum-overhead').innerText = totalOverhead.toLocaleString();
         
-        // Net Balance Remaining = (Initial Budget) - (Overheads) - (Paid to Labor)
-        let netBalance = totalQuote - totalOverhead - totalPaid;
-        document.getElementById('sum-net').innerText = "KES " + netBalance.toLocaleString();
+        let afterOverhead = totalQuote - totalOverhead;
+        document.getElementById('sum-after-overhead').innerText = afterOverhead.toLocaleString();
+
+        let netDue = afterOverhead - totalPaid;
+        document.getElementById('sum-net').innerText = netDue.toLocaleString();
     }
 
     function addOverhead() {
         let table = document.getElementById('overheadTable').getElementsByTagName('tbody')[0];
         let row = table.insertRow();
-        row.innerHTML = '<td contenteditable="true">--</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true" class="o-amount">0</td>';
+        row.innerHTML = '<td contenteditable="true">--</td><td contenteditable="true"></td><td contenteditable="true" class="o-amount">0</td>';
+    }
+
+    function saveData() {
+        const data = document.body.innerHTML;
+        localStorage.setItem('nexinReportData', data);
+        alert('Progress saved to this browser!');
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem('nexinReportData');
+        if (saved) {
+            // Only update the editable areas to prevent breaking scripts
+            document.body.innerHTML = saved;
+            calculate();
+        }
+    }
+
+    function clearData() {
+        if(confirm("Clear all data?")) {
+            localStorage.removeItem('nexinReportData');
+            location.reload();
+        }
     }
 
     document.addEventListener('input', calculate);
+    window.onload = loadData;
 </script>
-
 </body>
 </html>
