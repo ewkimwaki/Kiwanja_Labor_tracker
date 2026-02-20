@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexin LTD | Financial Reconciliation</title>
+    <style>
+        :root { --nexin-orange: #FF8C00; --nexin-dark: #1E1E26; --nexin-bg: #F4F7F6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--nexin-bg); padding: 20px; color: #333; }
+        .dashboard { max-width: 1000px; margin: auto; background: #fff; padding: 40px; border-radius: 8px; border-top: 8px solid var(--nexin-orange); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { font-size: 28px; font-weight: 800; color: var(--nexin-dark); }
+        .logo span { color: var(--nexin-orange); }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: var(--nexin-dark); color: #fff; padding: 12px; text-align: left; font-size: 12px; }
+        td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; }
+        [contenteditable="true"] { background: #fffdf5; padding: 5px; border-radius: 3px; border: 1px solid transparent; }
+        [contenteditable="true"]:focus { border: 1px solid var(--nexin-orange); outline: none; background: #fff; }
+        .overhead-box { background: #fff5eb; padding: 20px; border-radius: 5px; margin-top: 20px; }
+        .total-row { background: #eee; font-weight: bold; }
+        .btn-group { margin-bottom: 20px; display: flex; gap: 10px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; font-weight: 600; }
+        .btn-pdf { background: var(--nexin-dark); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="btn-group">
+        <button class="btn-pdf" onclick="window.print()">Save as PDF / Print</button>
+    </div>
+
+    <header>
+        <div class="logo">NEXIN <span>LTD</span></div>
+        <div style="text-align: right">
+            <strong>Labor & Material Reconciliation</strong><br>
+            <span id="currentDate"></span>
+        </div>
+    </header>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Labor Force Description</th>
+                <th>Contract Sum (KES)</th>
+                <th>Paid to Date (KES)</th>
+                <th>M-PESA Ref / Date</th>
+                <th>Balance Due</th>
+            </tr>
+        </thead>
+        <tbody id="laborTable">
+            <tr><td>1. Paint Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
+            <tr><td>2. Glass Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
+            <tr><td>3. Board & Gypsum</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
+            <tr><td>4. Tile Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
+            <tr><td>5. Repair Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
+            <tr><td>6. Plumbing Works</td><td contenteditable="true" class="val-contract">0</td><td contenteditable="true" class="val-paid">0</td><td contenteditable="true">--</td><td class="val-due">0</td></tr>
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td>TOTAL LABOR COST</td>
+                <td id="totalContract">0</td>
+                <td id="totalPaid">0</td>
+                <td>--</td>
+                <td id="totalDue">0</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="overhead-box">
+        <h3>Material Diversion / Overhead Log</h3>
+        <p><small>Finances originally assigned for labor used for urgent site materials.</small></p>
+        <table id="overheadTable">
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>M-PESA Details</th>
+                <th>Amount (KES)</th>
+            </tr>
+            <tr>
+                <td contenteditable="true">01/01/26</td>
+                <td contenteditable="true">Cement & Sand delivery</td>
+                <td contenteditable="true">MPESA-REF-XYZ</td>
+                <td contenteditable="true" class="over-amt">0</td>
+            </tr>
+        </table>
+        <button onclick="addRow()">+ Add Row</button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString();
+
+    document.addEventListener('input', function() {
+        let totalC = 0, totalP = 0, totalD = 0;
+        
+        document.querySelectorAll('#laborTable tr').forEach(row => {
+            let c = parseFloat(row.querySelector('.val-contract').innerText) || 0;
+            let p = parseFloat(row.querySelector('.val-paid').innerText) || 0;
+            let d = c - p;
+            row.querySelector('.val-due').innerText = d.toLocaleString();
+            totalC += c; totalP += p; totalD += d;
+        });
+
+        document.getElementById('totalContract').innerText = totalC.toLocaleString();
+        document.getElementById('totalPaid').innerText = totalPaid.toLocaleString();
+        document.getElementById('totalDue').innerText = totalDue.toLocaleString();
+    });
+
+    function addRow() {
+        let table = document.getElementById('overheadTable');
+        let row = table.insertRow(-1);
+        row.innerHTML = '<td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true" class="over-amt">0</td>';
+    }
+</script>
+</body>
+</html>
