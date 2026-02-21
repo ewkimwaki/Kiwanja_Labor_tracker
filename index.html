@@ -14,36 +14,28 @@
         .tab-btn.active { background: var(--nexin-dark); color: white; border-top: 4px solid var(--nexin-orange); }
         .tab-btn:hover:not(.active) { background: #ccc; }
 
+        /* Dashboard Containers */
         .dashboard { max-width: 1000px; margin: auto; background: #fff; padding: 40px; border-radius: 0 8px 8px 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: none; }
         .dashboard.active { display: block; } 
 
-        header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+        header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
         .logo { font-size: 28px; font-weight: 800; color: var(--nexin-dark); }
         .logo span { color: var(--nexin-orange); }
         
-        /* Shared Styles */
+        /* Summary Grid - Sourced from your perfect layout */
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .card { background: var(--nexin-dark); color: white; padding: 20px; border-radius: 6px; text-align: center; }
-        .card h4 { margin: 0; font-size: 11px; text-transform: uppercase; color: #aaa; letter-spacing: 1px; }
-        .card .amount { font-size: 24px; font-weight: bold; margin-top: 10px; }
+        .card { background: var(--nexin-dark); color: white; padding: 20px; border-radius: 6px; border-bottom: 4px solid var(--nexin-orange); }
+        .card h4 { margin: 0; font-size: 11px; text-transform: uppercase; color: #aaa; }
+        .card .amount { font-size: 20px; font-weight: bold; margin-top: 5px; }
         .card.highlight { background: var(--nexin-orange); color: var(--nexin-dark); }
-        .card.highlight h4 { color: rgba(0,0,0,0.6); }
 
-        /* Original Natural Table Layout */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-        th { background: #f8f9fa; color: var(--nexin-dark); padding: 12px; text-align: left; font-size: 12px; border-bottom: 2px solid var(--nexin-dark); text-transform: uppercase; }
+        /* Exact Table CSS you provided */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: #f8f9fa; color: var(--nexin-dark); padding: 12px; text-align: left; font-size: 11px; border-bottom: 2px solid var(--nexin-dark); text-transform: uppercase; }
         td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; }
         
-        /* Fixed Input Fields - Now expand to fill their column naturally */
-        [contenteditable="true"] { 
-            background: #fffdf5; 
-            border: 1px dashed #ccc; 
-            padding: 6px 8px; 
-            outline: none; 
-            border-radius: 3px; 
-            min-width: 30px; 
-            display: block; /* This is the fix that aligns them under the headers */
-        }
+        /* Exact Input CSS you provided (NO block display) */
+        [contenteditable="true"] { background: #fffdf5; border: 1px dashed #ccc; padding: 4px; outline: none; border-radius: 3px; }
         [contenteditable="true"]:focus { border-color: var(--nexin-orange); background: #fff; }
         
         .controls { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
@@ -53,8 +45,8 @@
         .btn-pdf { background: var(--nexin-dark); color: white; }
         .btn-add { background: #eee; color: #333; margin-top: -10px; margin-bottom: 20px; }
 
-        .phase-box { background: #fff5eb; padding: 15px; border-left: 4px solid var(--nexin-orange); margin-bottom: 25px; border-radius: 4px; }
         .overhead-section { background: #fff5eb; padding: 20px; border-radius: 5px; margin-top: 30px; border: 1px solid #ffe0b2; }
+        .phase-box { background: #fff5eb; padding: 15px; border-left: 4px solid var(--nexin-orange); margin-bottom: 25px; border-radius: 4px; }
         .signature-area { display: none; margin-top: 50px; border-top: 1px solid #333; width: 250px; padding-top: 10px; font-size: 12px; }
 
         /* HIDE CONTROLS ON PRINT */
@@ -78,6 +70,7 @@
 <div id="financeTab" class="dashboard active">
     <div class="controls no-print">
         <button class="btn btn-save" onclick="saveFinance()">💾 Save Finance</button>
+        <button class="btn btn-clear" onclick="clearData('finance')">🗑️ Reset</button>
         <button class="btn btn-pdf" onclick="window.print()">📄 Export Financial PDF</button>
     </div>
 
@@ -85,14 +78,14 @@
         <div class="logo">NEXIN <span>LTD</span></div>
         <div style="text-align: right">
             <strong>Financial Reconciliation Report</strong><br>
-            <small>Site Phase: <span contenteditable="true" style="display:inline-block;">Five-Story Apartment Development</span></small>
+            <small>Site Phase: <span contenteditable="true">Five-Story Apartment Development</span></small>
         </div>
     </header>
 
     <div class="summary-grid">
         <div class="card"><h4>Total Labor Budget</h4><div class="amount" id="sum-initial">0</div></div>
         <div class="card"><h4>Material Overheads</h4><div class="amount" id="sum-overhead" style="color: var(--nexin-orange);">0</div></div>
-        <div class="card highlight"><h4>Bal. After Overheads</h4><div id="sum-after-overhead" class="amount" style="color: var(--nexin-dark);">0</div></div>
+        <div class="card highlight"><h4>Bal. After Overheads</h4><div id="sum-after-overhead" class="amount">0</div></div>
         <div class="card"><h4>Net Due (Labor)</h4><div class="amount" id="sum-net">0</div></div>
     </div>
 
@@ -102,12 +95,12 @@
             <tr><th>Trade</th><th>Contract Sum (KES)</th><th>Paid to Date</th><th>M-PESA / Remarks</th><th>Balance Due</th></tr>
         </thead>
         <tbody id="laborTable">
-            <tr><td>Paint Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
-            <tr><td>Glass Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
-            <tr><td>Board & Gypsum</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
-            <tr><td>Tile Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
-            <tr><td>Repair Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
-            <tr><td>Plumbing Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Paint Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Glass Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Board & Gypsum</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Tile Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Repair Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Plumbing Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
         </tbody>
     </table>
 
@@ -128,6 +121,7 @@
 <div id="dailyTab" class="dashboard">
     <div class="controls no-print">
         <button class="btn btn-save" onclick="saveDaily()">💾 Save Daily Report</button>
+        <button class="btn btn-clear" onclick="clearData('daily')">🗑️ Reset</button>
         <button class="btn btn-pdf" onclick="window.print()">📄 Export Daily PDF</button>
     </div>
 
@@ -135,12 +129,12 @@
         <div class="logo">NEXIN <span>LTD</span></div>
         <div style="text-align: right">
             <strong>Daily Site & Phase Report</strong><br>
-            <small>Date: <span contenteditable="true" style="display:inline-block;">DD/MM/YYYY</span></small>
+            <small>Date: <span contenteditable="true">DD/MM/YYYY</span></small>
         </div>
     </header>
 
     <div class="phase-box">
-        Current Construction Phase: <span contenteditable="true" style="font-weight: bold; font-size: 18px; color: var(--nexin-dark); display:inline-block;">e.g., 5th Floor Masonry & Plastering</span>
+        Current Construction Phase: <span contenteditable="true" style="font-weight: bold; font-size: 16px; color: var(--nexin-dark);">e.g., 5th Floor Masonry & Plastering</span>
     </div>
 
     <div class="summary-grid">
@@ -185,6 +179,7 @@
     }
 
     function calculateAll() {
+        // Finance Math
         let tQuote = 0, tPaid = 0, tOverhead = 0;
         document.querySelectorAll('#laborTable tr').forEach(row => {
             let q = parseFloat(row.querySelector('.l-quote').innerText.replace(/,/g, '')) || 0;
@@ -200,6 +195,7 @@
         document.getElementById('sum-after-overhead').innerText = "KES " + afterOh.toLocaleString();
         document.getElementById('sum-net').innerText = "KES " + (afterOh - tPaid).toLocaleString();
 
+        // Daily Site Math
         let skilled = parseInt(document.getElementById('skilledCount').innerText) || 0;
         let unskilled = parseInt(document.getElementById('unskilledCount').innerText) || 0;
         document.getElementById('totalHeadcount').innerText = skilled + unskilled;
@@ -227,6 +223,7 @@
         row.innerHTML = '<td contenteditable="true"></td><td contenteditable="true">0</td><td contenteditable="true">0</td>';
     }
 
+    // Save/Load Logic via full HTML state to preserve added rows
     function saveFinance() {
         localStorage.setItem('nexin_finance_html', document.getElementById('financeTab').innerHTML);
         alert('Financial Data Saved!');
@@ -241,6 +238,13 @@
         if(fData) document.getElementById('financeTab').innerHTML = fData;
         if(dData) document.getElementById('dailyTab').innerHTML = dData;
         calculateAll();
+    }
+    function clearData(type) {
+        if(confirm("This will erase saved data for this specific page. Proceed?")) {
+            if(type === 'finance') localStorage.removeItem('nexin_finance_html');
+            if(type === 'daily') localStorage.removeItem('nexin_daily_html');
+            location.reload();
+        }
     }
 
     document.addEventListener('input', calculateAll);
