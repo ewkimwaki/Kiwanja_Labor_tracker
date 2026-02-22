@@ -8,13 +8,11 @@
         :root { --nexin-orange: #FF8C00; --nexin-dark: #1E1E26; --nexin-bg: #F4F7F6; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--nexin-bg); padding: 20px; color: #333; margin: 0; }
         
-        /* Navigation Tabs */
         .tab-nav { max-width: 1000px; margin: 0 auto 20px auto; display: flex; gap: 10px; }
         .tab-btn { padding: 15px 30px; border: none; background: #ddd; color: #555; font-weight: bold; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 14px; transition: 0.3s; }
         .tab-btn.active { background: var(--nexin-dark); color: white; border-top: 4px solid var(--nexin-orange); }
         .tab-btn:hover:not(.active) { background: #ccc; }
 
-        /* Dashboard Containers */
         .dashboard { max-width: 1000px; margin: auto; background: #fff; padding: 40px; border-radius: 0 8px 8px 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: none; }
         .dashboard.active { display: block; } 
 
@@ -22,19 +20,16 @@
         .logo { font-size: 28px; font-weight: 800; color: var(--nexin-dark); }
         .logo span { color: var(--nexin-orange); }
         
-        /* Summary Grid - Sourced from your perfect layout */
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card { background: var(--nexin-dark); color: white; padding: 20px; border-radius: 6px; border-bottom: 4px solid var(--nexin-orange); }
         .card h4 { margin: 0; font-size: 11px; text-transform: uppercase; color: #aaa; }
         .card .amount { font-size: 20px; font-weight: bold; margin-top: 5px; }
         .card.highlight { background: var(--nexin-orange); color: var(--nexin-dark); }
 
-        /* Exact Table CSS you provided */
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th { background: #f8f9fa; color: var(--nexin-dark); padding: 12px; text-align: left; font-size: 11px; border-bottom: 2px solid var(--nexin-dark); text-transform: uppercase; }
         td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; }
         
-        /* Exact Input CSS you provided (NO block display) */
         [contenteditable="true"] { background: #fffdf5; border: 1px dashed #ccc; padding: 4px; outline: none; border-radius: 3px; }
         [contenteditable="true"]:focus { border-color: var(--nexin-orange); background: #fff; }
         
@@ -45,11 +40,12 @@
         .btn-pdf { background: var(--nexin-dark); color: white; }
         .btn-add { background: #eee; color: #333; margin-top: -10px; margin-bottom: 20px; }
 
-        .overhead-section { background: #fff5eb; padding: 20px; border-radius: 5px; margin-top: 30px; border: 1px solid #ffe0b2; }
+        .overhead-section, .target-box, .delivery-box { background: #fff5eb; padding: 20px; border-radius: 5px; margin-top: 30px; border: 1px solid #ffe0b2; }
         .phase-box { background: #fff5eb; padding: 15px; border-left: 4px solid var(--nexin-orange); margin-bottom: 25px; border-radius: 4px; }
+        .target-box { border-left: 4px solid #2e7d32; background: #f1f8e9; border-color: #c5e1a5; }
+        
         .signature-area { display: none; margin-top: 50px; border-top: 1px solid #333; width: 250px; padding-top: 10px; font-size: 12px; }
 
-        /* HIDE CONTROLS ON PRINT */
         @media print { 
             .no-print { display: none !important; } 
             body { background: white; padding: 0; }
@@ -59,6 +55,272 @@
             .signature-area { display: block; }
         }
     </style>
+</head>
+<body>
+
+<div class="tab-nav no-print">
+    <button class="tab-btn active" onclick="openTab('financeTab', this)">💰 Financial Reconciliation</button>
+    <button class="tab-btn" onclick="openTab('dailyTab', this)">🏗️ Daily Phase Tracker</button>
+</div>
+
+<div id="financeTab" class="dashboard active">
+    <div class="controls no-print">
+        <button class="btn btn-save" onclick="saveFinance()">💾 Save Finance</button>
+        <button class="btn btn-clear" onclick="clearData('finance')">🗑️ Reset</button>
+        <button class="btn btn-pdf" onclick="exportFinancePDF()">📄 Export Financial PDF</button>
+    </div>
+
+    <header>
+        <div class="logo">NEXIN <span>LTD</span></div>
+        <div style="text-align: right">
+            <strong>Financial Reconciliation Report</strong><br>
+            <small>Site Phase: <span contenteditable="true">Five-Story Apartment Development</span></small>
+        </div>
+    </header>
+
+    <div class="summary-grid">
+        <div class="card"><h4>Total Labor Budget</h4><div class="amount" id="sum-initial">0</div></div>
+        <div class="card"><h4>Material Overheads</h4><div class="amount" id="sum-overhead" style="color: var(--nexin-orange);">0</div></div>
+        <div class="card highlight"><h4>Bal. After Overheads</h4><div id="sum-after-overhead" class="amount" style="color: var(--nexin-dark);">0</div></div>
+        <div class="card"><h4>Net Due (Labor)</h4><div class="amount" id="sum-net">0</div></div>
+    </div>
+
+    <h3>1. Labor Force Breakdown</h3>
+    <table>
+        <thead>
+            <tr><th>Trade</th><th>Contract Sum (KES)</th><th>Paid to Date</th><th>M-PESA / Remarks</th><th>Balance Due</th></tr>
+        </thead>
+        <tbody id="laborTable">
+            <tr><td contenteditable="true">Paint Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Glass Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Board & Gypsum</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Tile Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Repair Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+            <tr><td contenteditable="true">Plumbing Works</td><td contenteditable="true" class="l-quote">0</td><td contenteditable="true" class="l-paid">0</td><td contenteditable="true">--</td><td class="l-due">0</td></tr>
+        </tbody>
+    </table>
+
+    <div class="overhead-section">
+        <h3>2. Material Diversion Log</h3>
+        <table id="overheadTable">
+            <thead><tr><th>Date</th><th>Description</th><th>Amount (KES)</th></tr></thead>
+            <tbody id="overheadBody">
+                <tr><td contenteditable="true">--</td><td contenteditable="true"></td><td contenteditable="true" class="o-amount">0</td></tr>
+            </tbody>
+        </table>
+        <button class="btn btn-add no-print" onclick="addOverhead()">+ Add Row</button>
+    </div>
+    
+    <div class="signature-area"><strong>Project Manager Signature</strong><br>Nexin LTD Management Portal</div>
+</div>
+
+<div id="dailyTab" class="dashboard">
+    <div class="controls no-print">
+        <button class="btn btn-save" onclick="saveDaily()">💾 Save Daily Report</button>
+        <button class="btn btn-clear" onclick="clearData('daily')">🗑️ Reset</button>
+        <button class="btn btn-pdf" onclick="exportDailyPDF()">📄 Export Daily PDF</button>
+    </div>
+
+    <header>
+        <div class="logo">NEXIN <span>LTD</span></div>
+        <div style="text-align: right">
+            <strong>Daily Site & Phase Report</strong><br>
+            <small>Date: <span id="autoDailyDate" style="font-weight:bold;"></span></small>
+        </div>
+    </header>
+
+    <div class="phase-box">
+        Current Construction Phase: <span contenteditable="true" style="font-weight: bold; font-size: 16px; color: var(--nexin-dark);">e.g., 5th Floor Masonry & Plastering</span>
+    </div>
+
+    <div class="summary-grid">
+        <div class="card"><h4>Skilled Labor</h4><div class="amount" contenteditable="true" id="skilledCount">0</div></div>
+        <div class="card"><h4>Unskilled Labor</h4><div class="amount" contenteditable="true" id="unskilledCount">0</div></div>
+        <div class="card highlight"><h4>Total Headcount</h4><div class="amount" id="totalHeadcount" style="color: var(--nexin-dark);">0</div></div>
+    </div>
+
+    <h3>1. Daily Material Consumption Log</h3>
+    <table>
+        <thead>
+            <tr><th>Material Type</th><th>Opening Stock</th><th>Used Today</th><th>Closing Balance</th></tr>
+        </thead>
+        <tbody id="materialBody">
+            <tr>
+                <td contenteditable="true">e.g., Cement</td>
+                <td contenteditable="true" class="m-open">0</td><td contenteditable="true" class="m-used">0</td>
+                <td class="m-close" style="font-weight: bold;">0</td>
+            </tr>
+        </tbody>
+    </table>
+    <button class="btn btn-add no-print" onclick="addMaterial()">+ Add Material Row</button>
+
+    <div class="delivery-box">
+        <h3 style="margin-top:0;">2. Materials Received On Site Today</h3>
+        <table>
+            <thead><tr><th>Supplier / Vendor</th><th>Material Delivered</th><th>Qty</th><th>Total Cost (KES)</th></tr></thead>
+            <tbody id="deliveryBody">
+                <tr><td contenteditable="true">Hardware Co.</td><td contenteditable="true">Y12 Rebar</td><td contenteditable="true">50 Pcs</td><td contenteditable="true" class="d-cost">0</td></tr>
+            </tbody>
+            <tfoot>
+                <tr style="background:#eee; font-weight:bold;">
+                    <td colspan="3" style="text-align:right;">TOTAL MATERIAL COST TODAY:</td>
+                    <td id="totalDeliveryCost">0</td>
+                </tr>
+            </tfoot>
+        </table>
+        <button class="btn btn-add no-print" onclick="addDelivery()">+ Add Delivery Row</button>
+    </div>
+
+    <h3 style="margin-top: 30px;">3. Labor Subcontract Status (This Phase)</h3>
+    <table>
+        <thead><tr><th>Trade / Subcontractor</th><th>Subcontract Amount (KES)</th><th>Paid to Date (KES)</th><th>Amount Due (KES)</th></tr></thead>
+        <tbody id="subcontractBody">
+            <tr>
+                <td contenteditable="true">Masonry Team</td>
+                <td contenteditable="true" class="s-amount">0</td>
+                <td contenteditable="true" class="s-paid">0</td>
+                <td class="s-due" style="font-weight:bold;">0</td>
+            </tr>
+        </tbody>
+    </table>
+    <button class="btn btn-add no-print" onclick="addSubcontract()">+ Add Trade Row</button>
+
+    <div class="target-box">
+        <h3 style="margin-top:0; color: #1b5e20;">🎯 Tomorrow's Target</h3>
+        <table style="margin-bottom:0;">
+            <tr>
+                <td style="width: 30%; font-weight:bold; color:#33691e; border:none; padding-bottom:5px;">Assigned Team:</td>
+                <td style="font-weight:bold; color:#33691e; border:none; padding-bottom:5px;">Primary Objective:</td>
+            </tr>
+            <tr>
+                <td contenteditable="true" style="border:none; border-bottom:1px solid #c5e1a5; background:transparent;">e.g., Plumbers & Masons</td>
+                <td contenteditable="true" style="border:none; border-bottom:1px solid #c5e1a5; background:transparent;">e.g., Complete 3rd floor piping and begin wall chasing.</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="signature-area"><strong>Site Manager Signature</strong><br>Nexin LTD Daily Log</div>
+</div>
+
+<script>
+    // Auto-set Date for Daily Report
+    const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    document.getElementById('autoDailyDate').innerText = todayStr;
+
+    function openTab(tabId, btnElement) {
+        document.querySelectorAll('.dashboard').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btnElement.classList.add('active');
+        document.title = tabId === 'dailyTab' ? `Daily Site Report ${todayStr.replace(/\//g, '.')}` : 'Nexin LTD | Management Portal';
+    }
+
+    function calculateAll() {
+        // Finance Math
+        let tQuote = 0, tPaid = 0, tOverhead = 0;
+        document.querySelectorAll('#laborTable tr').forEach(row => {
+            let q = parseFloat(row.querySelector('.l-quote').innerText.replace(/,/g, '')) || 0;
+            let p = parseFloat(row.querySelector('.l-paid').innerText.replace(/,/g, '')) || 0;
+            row.querySelector('.l-due').innerText = (q - p).toLocaleString();
+            tQuote += q; tPaid += p;
+        });
+        document.querySelectorAll('.o-amount').forEach(cell => { tOverhead += parseFloat(cell.innerText.replace(/,/g, '')) || 0; });
+        
+        document.getElementById('sum-initial').innerText = "KES " + tQuote.toLocaleString();
+        document.getElementById('sum-overhead').innerText = "KES " + tOverhead.toLocaleString();
+        let afterOh = tQuote - tOverhead;
+        document.getElementById('sum-after-overhead').innerText = "KES " + afterOh.toLocaleString();
+        document.getElementById('sum-net').innerText = "KES " + (afterOh - tPaid).toLocaleString();
+
+        // Daily Site Math - Headcount
+        let skilled = parseInt(document.getElementById('skilledCount').innerText) || 0;
+        let unskilled = parseInt(document.getElementById('unskilledCount').innerText) || 0;
+        document.getElementById('totalHeadcount').innerText = skilled + unskilled;
+
+        // Daily Site Math - Consumption
+        document.querySelectorAll('#materialBody tr').forEach(row => {
+            let o = parseFloat(row.querySelector('.m-open').innerText) || 0;
+            let u = parseFloat(row.querySelector('.m-used').innerText) || 0;
+            let c = o - u;
+            let closeCell = row.querySelector('.m-close');
+            closeCell.innerText = c;
+            closeCell.style.color = c < 0 ? '#d32f2f' : 'inherit'; 
+        });
+
+        // Daily Site Math - Deliveries Cost
+        let dCostTotal = 0;
+        document.querySelectorAll('.d-cost').forEach(cell => {
+            dCostTotal += parseFloat(cell.innerText.replace(/,/g, '')) || 0;
+        });
+        document.getElementById('totalDeliveryCost').innerText = "KES " + dCostTotal.toLocaleString();
+
+        // Daily Site Math - Subcontractor Due
+        document.querySelectorAll('#subcontractBody tr').forEach(row => {
+            let sAmt = parseFloat(row.querySelector('.s-amount').innerText.replace(/,/g, '')) || 0;
+            let sPaid = parseFloat(row.querySelector('.s-paid').innerText.replace(/,/g, '')) || 0;
+            row.querySelector('.s-due').innerText = (sAmt - sPaid).toLocaleString();
+        });
+    }
+
+    function addOverhead() {
+        let row = document.getElementById('overheadBody').insertRow();
+        row.innerHTML = '<td contenteditable="true">--</td><td contenteditable="true"></td><td contenteditable="true" class="o-amount">0</td>';
+    }
+    function addMaterial() {
+        let row = document.getElementById('materialBody').insertRow();
+        row.innerHTML = '<td contenteditable="true"></td><td contenteditable="true" class="m-open">0</td><td contenteditable="true" class="m-used">0</td><td class="m-close" style="font-weight: bold;">0</td>';
+    }
+    function addDelivery() {
+        let row = document.getElementById('deliveryBody').insertRow();
+        row.innerHTML = '<td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true" class="d-cost">0</td>';
+    }
+    function addSubcontract() {
+        let row = document.getElementById('subcontractBody').insertRow();
+        row.innerHTML = '<td contenteditable="true"></td><td contenteditable="true" class="s-amount">0</td><td contenteditable="true" class="s-paid">0</td><td class="s-due" style="font-weight:bold;">0</td>';
+    }
+
+    // Export with Smart Naming
+    function exportFinancePDF() {
+        document.title = "Nexin_Financial_Reconciliation";
+        window.print();
+    }
+    function exportDailyPDF() {
+        document.title = `Daily_Site_Report_${todayStr.replace(/\//g, '_')}`;
+        window.print();
+    }
+
+    // Save/Load Logic via full HTML state to preserve added rows
+    function saveFinance() {
+        localStorage.setItem('nexin_finance_html', document.getElementById('financeTab').innerHTML);
+        alert('Financial Data Saved!');
+    }
+    function saveDaily() {
+        localStorage.setItem('nexin_daily_html', document.getElementById('dailyTab').innerHTML);
+        alert('Daily Site Data Saved!');
+    }
+    function loadData() {
+        let fData = localStorage.getItem('nexin_finance_html');
+        let dData = localStorage.getItem('nexin_daily_html');
+        if(fData) document.getElementById('financeTab').innerHTML = fData;
+        if(dData) document.getElementById('dailyTab').innerHTML = dData;
+        
+        // Ensure date stays current even if loaded from memory
+        document.getElementById('autoDailyDate').innerText = todayStr;
+        calculateAll();
+    }
+    function clearData(type) {
+        if(confirm("This will erase saved data for this specific page. Proceed?")) {
+            if(type === 'finance') localStorage.removeItem('nexin_finance_html');
+            if(type === 'daily') localStorage.removeItem('nexin_daily_html');
+            location.reload();
+        }
+    }
+
+    document.addEventListener('input', calculateAll);
+    window.onload = loadData;
+</script>
+</body>
+</html>
 </head>
 <body>
 
@@ -252,3 +514,4 @@
 </script>
 </body>
 </html>
+
